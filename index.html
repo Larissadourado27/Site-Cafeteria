@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="author" content="Larissa Dourado">
+<title>SOMBRA — Café</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #070709;
+  --surface: #0E0E12;
+  --gold: #C8A96E;
+  --gold-light: #E8D5A8;
+  --gold-dim: rgba(200,169,110,0.12);
+  --cream: #F0E8D8;
+  --muted: #444450;
+  --muted-light: #80808C;
+  --red: #8B2020;
+  --display: 'Cormorant Garamond', serif;
+  --mono: 'Space Mono', monospace;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--display);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+::selection { background: var(--gold); color: var(--bg); }
+
+/* ─── GRAIN ─────────────────────────────────────────── */
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: .04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain .4s steps(3) infinite;
+}
+@keyframes grain {
+  0%   { transform: translate(0,0); }
+  25%  { transform: translate(-2%,-1%); }
+  50%  { transform: translate(1%,2%); }
+  75%  { transform: translate(-1%,1%); }
+  100% { transform: translate(2%,-2%); }
+}
+
+/* ─── LOADER ─────────────────────────────────────────── */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2rem;
+  transition: opacity .8s ease, visibility .8s;
+}
+#loader.hidden { opacity: 0; visibility: hidden; }
+
+.loader-logo {
+  font-family: var(--display);
+  font-size: 5rem;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: .05em;
+  color: var(--cream);
+  overflow: hidden;
+}
+.loader-logo span {
+  display: inline-block;
+  animation: loaderSlide 1.2s cubic-bezier(.16,1,.3,1) forwards;
+  transform: translateY(100%);
+  opacity: 0;
+}
+.loader-logo span:nth-child(2) { animation-delay: .1s; }
+.loader-logo span:nth-child(3) { animation-delay: .2s; }
+.loader-logo span:nth-child(4) { animation-delay: .3s; }
+.loader-logo span:nth-child(5) { animation-delay: .4s; }
+.loader-logo span:nth-child(6) { animation-delay: .5s; }
+
+@keyframes loaderSlide {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.loader-bar-wrap {
+  width: 200px;
+  height: 1px;
+  background: var(--muted);
+  position: relative;
+  overflow: hidden;
+}
+.loader-bar {
+  position: absolute;
+  left: 0; top: 0; height: 100%;
+  background: var(--gold);
+  animation: loadBar 1.8s ease forwards;
+}
+@keyframes loadBar { from { width: 0; } to { width: 100%; } }
+
+/* ─── CURSOR ─────────────────────────────────────────── */
+.cursor {
+  position: fixed;
+  width: 10px; height: 10px;
+  background: var(--gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 8000;
+  transform: translate(-50%,-50%);
+  transition: width .3s, height .3s;
+  mix-blend-mode: difference;
+}
+.cursor-ring {
+  position: fixed;
+  width: 36px; height: 36px;
+  border: 1px solid rgba(200,169,110,.45);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 7999;
+  transform: translate(-50%,-50%);
+}
+.cursor.big { width: 5px; height: 5px; }
+.cursor-ring.big { width: 56px; height: 56px; border-color: var(--gold); }
+
+/* ─── NAV ────────────────────────────────────────────── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 2.2rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: padding .5s, background .5s, border-color .5s;
+  border-bottom: 1px solid transparent;
+}
+nav.solid {
+  background: rgba(7,7,9,.94);
+  backdrop-filter: blur(12px);
+  padding: 1.3rem 4rem;
+  border-color: var(--gold-dim);
+}
+.nav-logo {
+  font-family: var(--display);
+  font-size: 1.55rem;
+  font-weight: 300;
+  font-style: italic;
+  letter-spacing: .1em;
+  color: var(--gold);
+  text-decoration: none;
+}
+.nav-links { list-style: none; display: flex; gap: 3.5rem; }
+.nav-links a {
+  font-family: var(--mono);
+  font-size: .58rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--muted-light);
+  text-decoration: none;
+  transition: color .3s;
+  position: relative;
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -4px; left: 0;
+  width: 0; height: 1px;
+  background: var(--gold);
+  transition: width .3s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-links a:hover::after { width: 100%; }
+
+/* ─── HERO ───────────────────────────────────────────── */
+.hero {
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 3rem 7rem 5rem;
+  position: relative;
+  z-index: 2;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: .58rem;
+  letter-spacing: .45em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 2.5rem;
+  opacity: 0;
+  animation: fadeUp 1s ease .4s forwards;
+}
+.hero-title {
+  font-family: var(--display);
+  font-size: clamp(7rem, 12vw, 13rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: .82;
+  letter-spacing: -.02em;
+  color: var(--cream);
+}
+.hero-title .line {
+  overflow: hidden;
+  display: block;
+}
+.hero-title .line span {
+  display: block;
+  opacity: 0;
+  transform: translateY(108%);
+  animation: slideUp 1.3s cubic-bezier(.16,1,.3,1) forwards;
+}
+.hero-title .line:nth-child(2) span {
+  animation-delay: .25s;
+  color: var(--gold);
+  padding-left: 2.5rem;
+}
+.hero-sub {
+  margin-top: 3rem;
+  font-family: var(--display);
+  font-size: 1.05rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--muted-light);
+  line-height: 1.7;
+  max-width: 320px;
+  opacity: 0;
+  animation: fadeUp 1s ease 1.3s forwards;
+}
+.hero-actions {
+  margin-top: 4rem;
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  opacity: 0;
+  animation: fadeUp 1s ease 1.6s forwards;
+}
+.btn {
+  font-family: var(--mono);
+  font-size: .58rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  transition: all .3s;
+  cursor: none;
+}
+.btn-fill {
+  background: var(--gold);
+  color: var(--bg);
+  padding: 1.1rem 2.8rem;
+}
+.btn-fill:hover { background: var(--gold-light); transform: translateY(-2px); }
+.btn-outline {
+  color: var(--muted-light);
+  gap: 1.2rem;
+}
+.btn-outline::after {
+  content: '';
+  width: 2.5rem; height: 1px;
+  background: currentColor;
+  transition: width .4s;
+}
+.btn-outline:hover { color: var(--cream); }
+.btn-outline:hover::after { width: 4rem; }
+
+/* HERO RIGHT */
+.hero-right {
+  position: relative;
+  overflow: hidden;
+}
+.hero-canvas {
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(10% 0%, 100% 0%, 100% 100%, 0% 100%);
+  background:
+    radial-gradient(ellipse at 35% 55%, rgba(200,169,110,.13) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 20%, rgba(100,40,20,.2) 0%, transparent 50%),
+    #09090C;
+}
+
+/* ── CSS Coffee Art ── */
+.coffee-scene {
+  position: absolute;
+  top: 50%;
+  left: 52%;
+  transform: translate(-50%,-50%);
+}
+.c-saucer {
+  width: 260px; height: 18px;
+  background: linear-gradient(180deg, #2A1E10, #1A1008);
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+}
+.c-saucer::after {
+  content: '';
+  position: absolute;
+  top: -3px; left: 50%;
+  transform: translateX(-50%);
+  width: 240px; height: 10px;
+  background: rgba(200,169,110,.06);
+  border-radius: 50%;
+}
+.c-cup {
+  width: 200px; height: 130px;
+  background: linear-gradient(160deg, #2C1E10 0%, #170D04 100%);
+  border-radius: 0 0 60px 60px;
+  margin: 0 auto -4px;
+  position: relative;
+  overflow: hidden;
+  box-shadow:
+    inset -6px -10px 20px rgba(0,0,0,.5),
+    inset 4px 8px 20px rgba(255,200,100,.04),
+    0 20px 60px rgba(0,0,0,.6);
+}
+.c-cup::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(200,169,110,.4), transparent);
+}
+.c-liquid {
+  position: absolute;
+  inset: 10px 10px 0;
+  border-radius: 0 0 55px 55px;
+  background:
+    radial-gradient(ellipse at 40% 30%, #5C3A18, #1E0E03);
+  overflow: hidden;
+}
+.c-foam {
+  position: absolute;
+  top: 10px; left: 50%;
+  transform: translateX(-50%);
+  width: 110px; height: 50px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 45% 40%, rgba(245,210,155,.65), rgba(200,160,100,.15));
+}
+.c-foam-swirl {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 60px; height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255,230,170,.25);
+  box-shadow: 0 0 0 3px rgba(255,230,170,.08);
+}
+.c-handle {
+  position: absolute;
+  right: -38px; top: 25px;
+  width: 38px; height: 60px;
+  border: 6px solid #2A1A08;
+  border-left: none;
+  border-radius: 0 30px 30px 0;
+  background: transparent;
+  box-shadow: inset -2px 0 8px rgba(0,0,0,.4);
+}
+.c-steam {
+  position: absolute;
+  bottom: 100%; left: 50%;
+  transform: translateX(-50%);
+  width: 120px; height: 80px;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+.s { width: 2px; border-radius: 2px; background: linear-gradient(to top, rgba(200,169,110,.5), transparent); animation: steamUp 2.8s ease-in-out infinite; }
+.s:nth-child(1) { height: 55px; animation-delay: 0s; }
+.s:nth-child(2) { height: 75px; animation-delay: .6s; }
+.s:nth-child(3) { height: 45px; animation-delay: 1.2s; }
+.s:nth-child(4) { height: 65px; animation-delay: .3s; }
+@keyframes steamUp {
+  0%   { opacity: 0; transform: translateY(0) scaleX(1); }
+  20%  { opacity: .7; }
+  80%  { opacity: .2; }
+  100% { opacity: 0; transform: translateY(-40px) scaleX(2); }
+}
+
+/* decorative cross lines */
+.hero-deco {
+  position: absolute;
+  background: var(--gold);
+  opacity: .18;
+}
+.deco-h { width: 35%; height: 1px; top: 38%; right: 0; animation: fadeIn 1.5s 2.5s ease forwards; opacity: 0; }
+.deco-v { width: 1px; height: 30%; bottom: 8rem; left: 4.5rem; animation: fadeIn 1.5s 2.7s ease forwards; opacity: 0; }
+@keyframes fadeIn { to { opacity: .18; } }
+
+.hero-index {
+  position: absolute;
+  bottom: 2.8rem; right: 4rem;
+  font-family: var(--mono);
+  font-size: .5rem;
+  letter-spacing: .3em;
+  color: var(--muted);
+  writing-mode: vertical-rl;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.hero-index::before {
+  content: '';
+  width: 1px; height: 45px;
+  background: currentColor;
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100% { opacity: .3; } 50% { opacity: 1; } }
+
+@keyframes fadeUp  { to { opacity: 1; transform: translateY(0); } }
+@keyframes slideUp { to { opacity: 1; transform: translateY(0); } }
+
+/* ─── TICKER ─────────────────────────────────────────── */
+.ticker-wrap {
+  overflow: hidden;
+  background: var(--surface);
+  border-top: 1px solid var(--gold-dim);
+  border-bottom: 1px solid var(--gold-dim);
+}
+.ticker {
+  display: flex;
+  gap: 0;
+  animation: tickerMove 28s linear infinite;
+  white-space: nowrap;
+}
+.tick {
+  font-family: var(--mono);
+  font-size: .54rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--muted-light);
+  padding: 1.2rem 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+  flex-shrink: 0;
+}
+.tick-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+@keyframes tickerMove { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ─── SECTIONS COMMON ────────────────────────────────── */
+.tag {
+  font-family: var(--mono);
+  font-size: .54rem;
+  letter-spacing: .38em;
+  text-transform: uppercase;
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  margin-bottom: 1.8rem;
+}
+.tag::before { content: ''; width: 28px; height: 1px; background: var(--gold); flex-shrink: 0; }
+
+/* ─── REVEAL ──────────────────────────────────────────── */
+.rv {
+  opacity: 0;
+  transform: translateY(36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+.rv.in { opacity: 1; transform: translateY(0); }
+.rv-l {
+  opacity: 0;
+  transform: translateX(-36px);
+  transition: opacity .9s ease, transform .9s ease;
+}
+.rv-l.in { opacity: 1; transform: translateX(0); }
+
+/* ─── MANIFESTO ──────────────────────────────────────── */
+.manifesto {
+  padding: 11rem 5rem;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 5rem;
+  align-items: start;
+  position: relative;
+}
+.manifesto::before {
+  content: '"';
+  position: absolute;
+  right: 4rem; top: 5rem;
+  font-family: var(--display);
+  font-size: 22rem;
+  line-height: 1;
+  color: rgba(200,169,110,.035);
+  pointer-events: none;
+  user-select: none;
+}
+.stats {
+  margin-top: 4rem;
+  border-top: 1px solid var(--gold-dim);
+  padding-top: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+.stat h3 {
+  font-family: var(--display);
+  font-size: 3.2rem;
+  font-weight: 300;
+  color: var(--gold);
+}
+.stat p {
+  font-family: var(--mono);
+  font-size: .52rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: .4rem;
+}
+.manifesto-text {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 3.8vw, 3.8rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.18;
+  color: var(--cream);
+}
+.manifesto-text em { color: var(--gold); font-style: normal; }
+.manifesto-body {
+  margin-top: 2.8rem;
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.95;
+  color: var(--muted-light);
+  max-width: 540px;
+}
+.manifesto-body + .manifesto-body { margin-top: 1.4rem; }
+
+/* ─── MENU ───────────────────────────────────────────── */
+.menu {
+  padding: 9rem 5rem;
+  border-top: 1px solid var(--gold-dim);
+}
+.menu-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 5rem;
+}
+.menu-h2 {
+  font-family: var(--display);
+  font-size: clamp(3rem, 5.5vw, 5.5rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--cream);
+}
+.menu-note {
+  font-family: var(--mono);
+  font-size: .52rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 2;
+  text-align: right;
+  max-width: 220px;
+}
+
+.menu-cat {
+  font-family: var(--mono);
+  font-size: .5rem;
+  letter-spacing: .4em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 3.5rem 0 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--gold-dim);
+}
+.menu-cat:first-of-type { margin-top: 0; }
+
+.mi {
+  display: grid;
+  grid-template-columns: 60px 1fr auto auto;
+  align-items: center;
+  padding: 1.8rem 0;
+  border-bottom: 1px solid rgba(200,169,110,.06);
+  position: relative;
+  cursor: none;
+  gap: 1.5rem;
+  transition: border-color .3s;
+}
+.mi:hover { border-color: rgba(200,169,110,.18); }
+.mi-shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(200,169,110,.04) 50%, transparent 100%);
+  transform: translateX(-110%);
+  transition: transform .7s ease;
+}
+.mi:hover .mi-shimmer { transform: translateX(110%); }
+.mi:hover .mi-name { color: var(--gold); transform: translateX(6px); }
+
+.mi-num {
+  font-family: var(--mono);
+  font-size: .55rem;
+  color: var(--muted);
+  letter-spacing: .08em;
+}
+.mi-name {
+  font-family: var(--display);
+  font-size: 1.55rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--cream);
+  transition: color .35s, transform .35s;
+}
+.mi-desc {
+  font-family: var(--display);
+  font-size: .85rem;
+  font-weight: 300;
+  color: var(--muted);
+  margin-top: .25rem;
+  line-height: 1.5;
+}
+.mi-tags { display: flex; gap: .5rem; flex-wrap: wrap; }
+.mi-tag {
+  font-family: var(--mono);
+  font-size: .42rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border: 1px solid rgba(200,169,110,.28);
+  padding: .3rem .7rem;
+}
+.mi-price {
+  font-family: var(--mono);
+  font-size: .7rem;
+  color: var(--cream);
+  letter-spacing: .08em;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ─── ATMOSPHERE ─────────────────────────────────────── */
+.atm { border-top: 1px solid var(--gold-dim); }
+.atm-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  height: 75vh;
+}
+.atm-panel {
+  position: relative;
+  overflow: hidden;
+}
+.atm-bg {
+  position: absolute;
+  inset: 0;
+  transition: transform .7s ease;
+}
+.atm-panel:hover .atm-bg { transform: scale(1.06); }
+.atm-p1 .atm-bg { background: radial-gradient(ellipse at 40% 60%, #281808, #07050A); }
+.atm-p2 .atm-bg { background: radial-gradient(ellipse at 65% 35%, #18100A, #060408); }
+.atm-p3 .atm-bg { background: radial-gradient(ellipse at 50% 70%, #201008, #080502); }
+
+.atm-scene { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+.scene-1::before {
+  content: '';
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, rgba(200,169,110,.28), rgba(80,40,10,.5));
+  box-shadow: 0 0 70px rgba(200,169,110,.12), inset 0 0 30px rgba(0,0,0,.5);
+}
+.scene-2::before {
+  content: '';
+  width: 3px; height: 200px;
+  background: linear-gradient(to bottom, rgba(200,169,110,.6), transparent);
+  box-shadow: 15px 0 40px rgba(200,169,110,.08), -15px 0 40px rgba(200,169,110,.08);
+}
+.scene-3::before {
+  content: '';
+  width: 220px; height: 1px;
+  background: linear-gradient(to right, transparent, rgba(200,169,110,.5), transparent);
+  box-shadow: 0 10px 40px rgba(200,169,110,.1), 0 -10px 40px rgba(200,169,110,.1);
+}
+
+.atm-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 55%); }
+.atm-info { position: absolute; bottom: 2.5rem; left: 2.5rem; }
+.atm-tag {
+  font-family: var(--mono);
+  font-size: .48rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .5rem;
+}
+.atm-label {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--cream);
+}
+
+/* ─── BIG QUOTE ──────────────────────────────────────── */
+.bq {
+  padding: 13rem 5rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.bq::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(200,169,110,.04) 0%, transparent 65%);
+  pointer-events: none;
+}
+.bq-text {
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 4.5vw, 4.5rem);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 1.3;
+  color: var(--cream);
+  max-width: 860px;
+  margin: 0 auto;
+}
+.bq-text em { color: var(--gold); font-style: normal; }
+.bq-attr {
+  margin-top: 2.5rem;
+  font-family: var(--mono);
+  font-size: .52rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─── RESERVATION ─────────────────────────────────────── */
+.reserva {
+  padding: 9rem 5rem;
+  border-top: 1px solid var(--gold-dim);
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 7rem;
+  align-items: start;
+}
+.reserva-left h2 {
+  font-family: var(--display);
+  font-size: clamp(2.5rem, 4vw, 4.2rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--cream);
+  line-height: 1.1;
+  margin-bottom: 2rem;
+}
+.reserva-left h2 em { color: var(--gold); font-style: normal; }
+.reserva-left p {
+  font-family: var(--display);
+  font-weight: 300;
+  color: var(--muted-light);
+  line-height: 1.9;
+  font-size: 1rem;
+}
+.info-list { margin-top: 3.5rem; display: flex; flex-direction: column; gap: 2rem; }
+.info-label {
+  font-family: var(--mono);
+ font-size: .48rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .4rem;
+}
+.info-val {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--cream);
+}
+
+.form { display: flex; flex-direction: column; gap: 2.2rem; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.fg { display: flex; flex-direction: column; gap: .8rem; }
+.fg label {
+  font-family: var(--mono);
+  font-size: .48rem;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: var(--muted-light);
+}
+.fg input, .fg select, .fg textarea {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(200,169,110,.2);
+  padding: .85rem 0;
+  color: var(--cream);
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 300;
+  outline: none;
+  transition: border-color .3s;
+  cursor: none;
+}
+.fg input:focus, .fg select:focus, .fg textarea:focus { border-color: var(--gold); }
+.fg input::placeholder, .fg textarea::placeholder { color: var(--muted); }
+.fg select option { background: #111; }
+.fg textarea { resize: none; height: 60px; }
+.form-submit {
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: .58rem;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--bg);
+  background: var(--gold);
+  padding: 1.2rem 3.2rem;
+  border: none;
+  cursor: none;
+  transition: background .3s, transform .2s;
+  margin-top: .5rem;
+}
+.form-submit:hover { background: var(--gold-light); }
+.form-submit.done { background: #1D3A1D; color: #5EC85E; }
+
+/* ─── FOOTER ─────────────────────────────────────────── */
+footer {
+  border-top: 1px solid var(--gold-dim);
+  padding: 5rem;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  align-items: start;
+}
+.footer-logo {
+  font-family: var(--display);
+  font-size: 2.2rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--gold);
+}
+.footer-sub {
+  font-family: var(--display);
+  font-size: .9rem;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--muted);
+  margin-top: .5rem;
+}
+.footer-col-title {
+  font-family: var(--mono);
+  font-size: .5rem;
+  letter-spacing: .3em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 1.8rem;
+}
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 1.1rem; }
+.footer-links a {
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--muted-light);
+  text-decoration: none;
+  transition: color .3s;
+}
+.footer-links a:hover { color: var(--cream); }
+.footer-bottom {
+  grid-column: 1 / -1;
+  border-top: 1px solid rgba(200,169,110,.06);
+  padding-top: 2.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.footer-copy {
+  font-family: var(--mono);
+  font-size: .5rem;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ─── PARTICLES ──────────────────────────────────────── */
+.particle {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  animation: pFloat var(--d) ease-in-out infinite var(--delay);
+}
+@keyframes pFloat {
+  0%    { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+  8%    { opacity: var(--max-op); }
+  90%   { opacity: calc(var(--max-op) * .3); }
+  100%  { transform: translateY(-120px) rotate(540deg); opacity: 0; }
+}
+
+/* ─── SCROLLBAR ──────────────────────────────────────── */
+::-webkit-scrollbar { width: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(200,169,110,.4); }
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-logo">
+    <span>S</span><span>o</span><span>m</span><span>b</span><span>r</span><span>a</span>
+  </div>
+  <div class="loader-bar-wrap">
+    <div class="loader-bar"></div>
+  </div>
+</div>
+
+<!-- CURSOR -->
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cring"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">Sombra</a>
+  <ul class="nav-links">
+    <li><a href="#menu">Menu</a></li>
+    <li><a href="#about">Nós</a></li>
+    <li><a href="#reservar">Reservar</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-left">
+    <p class="hero-eyebrow">Est. 2024 &nbsp;·&nbsp; São Paulo, Brasil</p>
+    <h1 class="hero-title">
+      <span class="line"><span>Som</span></span>
+      <span class="line"><span>bra.</span></span>
+    </h1>
+    <p class="hero-sub">Onde o silêncio tem sabor<br>e cada xícara guarda um segredo.</p>
+    <div class="hero-actions">
+      <a href="#menu" class="btn btn-fill mag">Explorar Menu</a>
+      <a href="#reservar" class="btn btn-outline">Reservar Mesa</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="hero-canvas">
+      <div class="coffee-scene">
+        <div class="c-steam">
+          <div class="s"></div>
+          <div class="s"></div>
+          <div class="s"></div>
+          <div class="s"></div>
+        </div>
+        <div class="c-cup">
+          <div class="c-handle"></div>
+          <div class="c-liquid">
+            <div class="c-foam">
+              <div class="c-foam-swirl"></div>
+            </div>
+          </div>
+        </div>
+        <div class="c-saucer"></div>
+      </div>
+    </div>
+    <div class="hero-deco deco-h"></div>
+  </div>
+
+  <div class="hero-deco deco-v"></div>
+  <div class="hero-index">Scroll</div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker">
+    <span class="tick">Café de Origem Única <span class="tick-dot"></span></span>
+    <span class="tick">Torra Artesanal <span class="tick-dot"></span></span>
+    <span class="tick">Silêncio &amp; Presença <span class="tick-dot"></span></span>
+    <span class="tick">Moagem Diária <span class="tick-dot"></span></span>
+    <span class="tick">Terroir Brasileiro <span class="tick-dot"></span></span>
+    <span class="tick">Método Manual <span class="tick-dot"></span></span>
+    <span class="tick">Café de Origem Única <span class="tick-dot"></span></span>
+    <span class="tick">Torra Artesanal <span class="tick-dot"></span></span>
+    <span class="tick">Silêncio &amp; Presença <span class="tick-dot"></span></span>
+    <span class="tick">Moagem Diária <span class="tick-dot"></span></span>
+    <span class="tick">Terroir Brasileiro <span class="tick-dot"></span></span>
+    <span class="tick">Método Manual <span class="tick-dot"></span></span>
+  </div>
+</div>
+
+<!-- MANIFESTO -->
+<section class="manifesto" id="about">
+  <div>
+    <div class="tag rv">Nossa Filosofia</div>
+    <div class="stats rv" style="transition-delay:.2s">
+      <div class="stat"><h3>7</h3><p>Origens selecionadas</p></div>
+      <div class="stat"><h3>48h</h3><p>Ciclo de torra</p></div>
+      <div class="stat"><h3>∞</h3><p>Possibilidades</p></div>
+    </div>
+  </div>
+  <div>
+    <p class="manifesto-text rv" style="transition-delay:.15s">
+      Não vendemos café.<br>
+      Vendemos o momento<br>antes de <em>você falar</em>.
+    </p>
+    <p class="manifesto-body rv" style="transition-delay:.3s">
+      Na Sombra, cada xícara é um ato de presença. Selecionamos grãos de origem única de produtores que tratam o café como arte — torramos em pequenos lotes para preservar a complexidade de cada terroir, e servimos em um espaço pensado para desacelerar o tempo.
+    </p>
+    <p class="manifesto-body rv" style="transition-delay:.4s">
+      Aqui, o café não acompanha a conversa. A conversa acompanha o café.
+    </p>
+  </div>
+</section>
+
+<!-- MENU -->
+<section class="menu" id="menu">
+  <div class="menu-head">
+    <div>
+      <div class="tag rv">Cardápio</div>
+      <h2 class="menu-h2 rv" style="transition-delay:.15s">O que servimos</h2>
+    </div>
+    <p class="menu-note rv" style="transition-delay:.25s">Preços em BRL<br>Temporada Inverno 2025</p>
+  </div>
+
+  <div class="menu-cat rv">— Bebidas Quentes &amp; Frias</div>
+
+  <div class="mi rv">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">01</span>
+    <div class="mi-body">
+      <p class="mi-name">Obsidiana</p>
+      <p class="mi-desc">Cold brew 48h · carvão ativado · baunilha de Madagascar · sal do Himalaia</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Signature</span><span class="mi-tag">Gelado</span></div>
+    <span class="mi-price">R$ 28</span>
+  </div>
+
+  <div class="mi rv" style="transition-delay:.08s">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">02</span>
+    <div class="mi-body">
+      <p class="mi-name">Brasa</p>
+      <p class="mi-desc">Ristretto duplo · laranja caramelizada · cardamomo negro · espuma de mel cru</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Quente</span><span class="mi-tag">Intenso</span></div>
+    <span class="mi-price">R$ 24</span>
+  </div>
+
+  <div class="mi rv" style="transition-delay:.14s">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">03</span>
+    <div class="mi-body">
+      <p class="mi-name">Névoa</p>
+      <p class="mi-desc">Leite vaporizado · rosa seca · lavanda · fava de tonka · microespuma sedosa</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Floral</span><span class="mi-tag">Suave</span></div>
+    <span class="mi-price">R$ 22</span>
+  </div>
+
+  <div class="mi rv" style="transition-delay:.2s">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">04</span>
+    <div class="mi-body">
+      <p class="mi-name">Âmbar</p>
+      <p class="mi-desc">Filtrado por gravidade · envelhecido em carvalho · mel de abelha nativa · gelo esculpido</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Premium</span><span class="mi-tag">Gelado</span></div>
+    <span class="mi-price">R$ 36</span>
+  </div>
+
+  <div class="mi rv" style="transition-delay:.26s">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">05</span>
+    <div class="mi-body">
+      <p class="mi-name">Sombra</p>
+      <p class="mi-desc">Blend exclusivo da casa · ristretto duplo · cacau 85% dissolvido · latte art assinado</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Exclusivo</span><span class="mi-tag">Chef's Pick</span></div>
+    <span class="mi-price">R$ 32</span>
+  </div>
+
+  <div class="menu-cat rv" style="transition-delay:.1s">— Confeitaria &amp; Mesa</div>
+
+  <div class="mi rv">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">06</span>
+    <div class="mi-body">
+      <p class="mi-name">Tarte de Yuzu</p>
+      <p class="mi-desc">Massa folhada · creme de yuzu e gengibre · merengue tostado · flor de sal</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Sobremesa</span><span class="mi-tag">Cítrico</span></div>
+    <span class="mi-price">R$ 19</span>
+  </div>
+
+  <div class="mi rv" style="transition-delay:.08s">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">07</span>
+    <div class="mi-body">
+      <p class="mi-name">Croissant Noir</p>
+      <p class="mi-desc">Massa laminada com carvão ativado · tahini artesanal · gergelim preto · mel trufado</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Confeitaria</span></div>
+    <span class="mi-price">R$ 16</span>
+  </div>
+
+  <div class="mi rv" style="transition-delay:.16s">
+    <div class="mi-shimmer"></div>
+    <span class="mi-num">08</span>
+    <div class="mi-body">
+      <p class="mi-name">Pão de Mel Brûlé</p>
+      <p class="mi-desc">Pão de mel com crosta de açúcar queimado · ganache de especiarias · flor de laranjeira</p>
+    </div>
+    <div class="mi-tags"><span class="mi-tag">Sazonal</span><span class="mi-tag">Quente</span></div>
+    <span class="mi-price">R$ 18</span>
+  </div>
+</section>
+
+<!-- ATMOSPHERE PANELS -->
+<section class="atm">
+  <div class="atm-grid">
+    <div class="atm-panel atm-p1 rv-l">
+      <div class="atm-bg"></div>
+      <div class="atm-scene scene-1"></div>
+      <div class="atm-overlay"></div>
+      <div class="atm-info">
+        <p class="atm-tag">O Grão</p>
+        <p class="atm-label">Etiópia Yirgacheffe<br>Colheita 2024</p>
+      </div>
+    </div>
+    <div class="atm-panel atm-p2 rv" style="transition-delay:.2s">
+      <div class="atm-bg"></div>
+      <div class="atm-scene scene-2"></div>
+      <div class="atm-overlay"></div>
+      <div class="atm-info">
+        <p class="atm-tag">O Ritual</p>
+        <p class="atm-label">Cada extração,<br>uma cerimônia</p>
+      </div>
+    </div>
+    <div class="atm-panel atm-p3 rv" style="transition-delay:.4s">
+      <div class="atm-bg"></div>
+      <div class="atm-scene scene-3"></div>
+      <div class="atm-overlay"></div>
+      <div class="atm-info">
+        <p class="atm-tag">O Espaço</p>
+        <p class="atm-label">Arquitetura<br>do silêncio</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIG QUOTE -->
+<section class="bq">
+  <p class="bq-text rv">
+    "O café perfeito não é o mais caro.<br>
+    É aquele que te faz esquecer<br>
+    <em>o que você iria dizer</em>."
+  </p>
+  <p class="bq-attr rv" style="transition-delay:.3s">— Fundadores da Sombra</p>
+</section>
+
+<!-- RESERVATION -->
+<section class="reserva" id="reservar">
+  <div class="reserva-left">
+    <div class="tag rv">Reserve</div>
+    <h2 class="rv" style="transition-delay:.1s">Garanta<br><em>sua sombra</em></h2>
+    <p class="rv" style="transition-delay:.2s">Mesas limitadas para preservar a quietude. Reserve com antecedência e chegue sem pressa.</p>
+    <div class="info-list rv" style="transition-delay:.3s">
+      <div class="info-item">
+        <p class="info-label">Endereço</p>
+        <p class="info-val">Rua das Acácias, 417 · Pinheiros, SP</p>
+      </div>
+      <div class="info-item">
+        <p class="info-label">Seg — Sex</p>
+        <p class="info-val">8h às 22h</p>
+      </div>
+      <div class="info-item">
+        <p class="info-label">Sáb — Dom</p>
+        <p class="info-val">9h às 23h</p>
+      </div>
+    </div>
+  </div>
+
+  <form class="form rv" style="transition-delay:.2s" id="reservaForm">
+    <div class="form-row">
+      <div class="fg">
+        <label>Nome completo</label>
+        <input type="text" placeholder="Seu nome">
+      </div>
+      <div class="fg">
+        <label>Telefone</label>
+        <input type="tel" placeholder="+55 11 9 0000-0000">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="fg">
+        <label>Data</label>
+        <input type="date">
+      </div>
+      <div class="fg">
+        <label>Horário</label>
+        <select>
+          <option value="">Selecionar horário</option>
+          <option>08:00</option><option>09:00</option><option>10:00</option>
+          <option>11:00</option><option>14:00</option><option>15:00</option>
+          <option>16:00</option><option>17:00</option><option>18:00</option>
+          <option>19:00</option><option>20:00</option><option>21:00</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg">
+      <label>Número de pessoas</label>
+      <select>
+        <option>1 pessoa</option>
+        <option>2 pessoas</option>
+        <option>3 pessoas</option>
+        <option>4 pessoas</option>
+        <option>Mesa privativa (5+)</option>
+      </select>
+    </div>
+    <div class="fg">
+      <label>Observações especiais</label>
+      <textarea placeholder="Alergias, ocasião, preferências..."></textarea>
+    </div>
+    <button type="submit" class="form-submit mag" id="submitBtn">Confirmar Reserva</button>
+  </form>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <p class="footer-logo">Sombra</p>
+    <p class="footer-sub">Onde o café encontra o silêncio.</p>
+  </div>
+  <div>
+    <p class="footer-col-title">Navegação</p>
+    <ul class="footer-links">
+      <li><a href="#menu">Menu</a></li>
+      <li><a href="#about">Nossa história</a></li>
+      <li><a href="#reservar">Reservas</a></li>
+    </ul>
+  </div>
+  <div>
+    <p class="footer-col-title">Social</p>
+    <ul class="footer-links">
+      <li><a href="#">Instagram</a></li>
+      <li><a href="#">TikTok</a></li>
+      <li><a href="#">Pinterest</a></li>
+    </ul>
+  </div>
+  <div>
+    <p class="footer-col-title">Legal</p>
+    <ul class="footer-links">
+      <li><a href="#">Privacidade</a></li>
+      <li><a href="#">Termos</a></li>
+      <li><a href="#">Trabalhe conosco</a></li>
+    </ul>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2025 Sombra Café · Todos os direitos reservados</p>
+    <p class="footer-copy">Desenvolvido por Larissa Dourado</p>
+  </div>
+</footer>
+
+<script>
+/* LOADER */
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('loader').classList.add('hidden');
+  }, 2200);
+});
+
+/* CUSTOM CURSOR */
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px';
+  cur.style.top  = my + 'px';
+});
+
+(function trackRing() {
+  rx += (mx - rx) * .1;
+  ry += (my - ry) * .1;
+  ring.style.left = rx + 'px';
+  ring.style.top  = ry + 'px';
+  requestAnimationFrame(trackRing);
+})();
+
+document.querySelectorAll('a, button, .mi, input, select, textarea').forEach(el => {
+  el.addEventListener('mouseenter', () => { cur.classList.add('big'); ring.classList.add('big'); });
+  el.addEventListener('mouseleave', () => { cur.classList.remove('big'); ring.classList.remove('big'); });
+});
+
+/* NAV */
+const nav = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('solid', window.scrollY > 60);
+}, { passive: true });
+
+/* MAGNETIC BUTTONS */
+document.querySelectorAll('.mag').forEach(el => {
+  el.addEventListener('mousemove', e => {
+    const r = el.getBoundingClientRect();
+    const x = (e.clientX - r.left - r.width  / 2) * .28;
+    const y = (e.clientY - r.top  - r.height / 2) * .28;
+    el.style.transform = `translate(${x}px,${y}px)`;
+    el.style.transition = 'transform .05s';
+  });
+  el.addEventListener('mouseleave', () => {
+    el.style.transform = 'translate(0,0)';
+    el.style.transition = 'transform .6s cubic-bezier(.16,1,.3,1)';
+  });
+});
+
+/* SCROLL REVEAL */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+}, { threshold: .08, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.rv, .rv-l').forEach(el => obs.observe(el));
+
+/* HERO PARALLAX */
+const heroTitle = document.querySelector('.hero-title');
+const heroSub   = document.querySelector('.hero-sub');
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  if (y < window.innerHeight) {
+    heroTitle.style.transform = `translateY(${y * .18}px)`;
+    heroSub.style.transform = `translateY(${y * .12}px)`;
+  }
+}, { passive: true });
+
+/* FORM SUBMIT */
+document.getElementById('reservaForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Reserva Confirmada ✓';
+  btn.classList.add('done');
+  setTimeout(() => {
+    btn.textContent = 'Confirmar Reserva';
+    btn.classList.remove('done');
+    e.target.reset();
+  }, 3500);
+});
+
+/* AMBIENT PARTICLES */
+for (let i = 0; i < 18; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const sz = Math.random() * 2.5 + 0.5;
+  const op = (Math.random() * .2 + .05).toFixed(2);
+  p.style.cssText = `
+    width:${sz}px; height:${sz}px;
+    left:${Math.random() * 100}%;
+    background:rgba(200,169,110,${op});
+    --d:${(Math.random() * 18 + 12).toFixed(1)}s;
+    --delay:-${(Math.random() * 20).toFixed(1)}s;
+    --max-op:${op};
+  `;
+  document.body.appendChild(p);
+}
+</script>
+</body>
+</html>
